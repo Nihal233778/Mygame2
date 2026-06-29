@@ -1,286 +1,492 @@
-
+<!DOCTYPE html>
 <html lang="en">
 <head>
-<script type='text/javascript' src='//pl25778425.profitablecpmrate.com/09/03/99/0903999020af1c96f273a2f61a536cde.js'></script>
-<meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ad Reward System</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>TMA Auto Ad Loop</title>
+    
+    <!-- Telegram & Ad SDKs -->
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <script src="https://js.onclckvd.com/in-stream-ad-admanager/tma.js"></script>
+
     <style>
+        * {
+            box-sizing: border-box;
+            user-select: none;
+        }
+
         body {
+            background-color: var(--tg-theme-bg-color, #ffffff);
+            color: var(--tg-theme-text-color, #000000);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
             margin: 0;
-            padding: 0;
-            background-color: #121212;
-            color: #fff;
-            font-family: Arial, sans-serif;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
+            font-family: system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, sans-serif;
+            padding: 20px;
         }
-        .container {
+
+        .card {
+            background-color: var(--tg-theme-secondary-bg-color, #f5f5f5);
+            border-radius: 28px;
+            padding: 28px 24px;
+            width: 100%;
+            max-width: 380px;
             text-align: center;
-            background: #1f1f1f;
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
-            width: 300px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+            transition: all 0.2s ease;
+            backdrop-filter: blur(0px);
         }
-        .container h1 {
-            font-size: 20px;
-            color: green;
-            margin-bottom: 10px;
+
+        h1 {
+            font-size: 1.7rem;
+            font-weight: 700;
+            margin: 0 0 6px 0;
+            letter-spacing: -0.3px;
+            background: linear-gradient(135deg, var(--tg-theme-text-color, #000) 0%, var(--tg-theme-hint-color, #666) 100%);
+            background-clip: text;
+            -webkit-background-clip: text;
+            color: transparent;
         }
-        .developer {
-            font-size: 12px;
-            background-color: green;
-            padding: 5px 10px;
-            border-radius: 5px;
-            margin-bottom: 15px;
+
+        .badge {
             display: inline-block;
-            cursor: pointer;
+            background-color: var(--tg-theme-button-color, #2481cc);
+            color: var(--tg-theme-button-text-color, white);
+            font-size: 0.75rem;
+            font-weight: 600;
+            padding: 4px 12px;
+            border-radius: 40px;
+            margin-bottom: 18px;
+            letter-spacing: 0.3px;
         }
-        .stats {
-            margin: 10px 0;
+
+        .stats-panel {
+            background: var(--tg-theme-bg-color, #ffffff);
+            border-radius: 24px;
+            padding: 18px 12px;
+            margin: 20px 0;
+            box-shadow: inset 0 0 0 1px rgba(0,0,0,0.05), 0 2px 6px rgba(0,0,0,0.02);
         }
-        .stats p {
-            margin: 5px 0;
-            font-size: 14px;
+
+        .counter {
+            font-size: 3.2rem;
+            font-weight: 800;
+            line-height: 1;
+            color: var(--tg-theme-button-color, #2481cc);
+            margin: 8px 0 4px;
         }
-        .progress-circle {
-            width: 80px;
-            height: 80px;
-            border: 4px solid green;
-            border-radius: 50%;
+
+        .counter-label {
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: 500;
+            color: var(--tg-theme-hint-color, #8e8e93);
+        }
+
+        .status-text {
+            font-size: 0.9rem;
+            background: var(--tg-theme-secondary-bg-color, #efeff4);
+            padding: 10px 12px;
+            border-radius: 40px;
+            margin: 16px 0 18px;
+            font-weight: 500;
             display: flex;
-            justify-content: center;
             align-items: center;
-            margin: 10px auto;
+            justify-content: center;
+            gap: 8px;
         }
-        .progress-circle span {
-            font-size: 18px;
-            font-weight: bold;
-        }
-        .buttons button {
-            width: 90%;
-            margin: 5px 0;
-            padding: 10px;
-            font-size: 14px;
-            border: none;
-            border-radius: 5px;
-            color: white;
-            background: green;
-            cursor: pointer;
-        }
-        .buttons button:hover {
-            background: darkorange;
-        }
-        .withdraw-section {
-            margin-top: 20px;
-            display: none;
-            padding: 20px;
-            background-color: #2a2a2a;
+
+        .led {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
             border-radius: 10px;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+            background-color: #34c759;
+            box-shadow: 0 0 4px #34c759;
+            transition: 0.2s;
         }
-        .withdraw-section input, .withdraw-section select {
+        .led.paused {
+            background-color: #ff9f0a;
+            box-shadow: 0 0 4px #ff9f0a;
+        }
+        .led.error {
+            background-color: #ff3b30;
+            box-shadow: 0 0 4px #ff3b30;
+        }
+
+        button {
+            background-color: var(--tg-theme-button-color, #2481cc);
+            color: var(--tg-theme-button-text-color, #ffffff);
+            border: none;
+            border-radius: 60px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            padding: 14px 20px;
             width: 100%;
-            padding: 12px;
-            margin: 8px 0;
-            border-radius: 5px;
-            border: 2px solid #555;
-            background-color: #333;
-            color: #fff;
-        }
-        .withdraw-section input:focus, .withdraw-section select:focus {
-            border-color: green;
-            outline: none;
-        }
-        .withdraw-section button {
-            background-color: green;
-            width: 100%;
-            padding: 12px;
-            font-size: 16px;
-            margin-top: 15px;
-            border-radius: 5px;
             cursor: pointer;
+            transition: all 0.2s ease;
+            margin-top: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
         }
-        .withdraw-section button:hover {
-            background-color: #006400;
+
+        button:active {
+            transform: scale(0.97);
+            opacity: 0.9;
         }
-        #withdraw-status {
-            color: red;
-            font-size: 14px;
-            margin-top: 10px;
+
+        .reset-btn {
+            background-color: transparent;
+            color: var(--tg-theme-text-color, #000);
+            box-shadow: none;
+            border: 1px solid var(--tg-theme-hint-color, #c6c6c8);
+            margin-top: 12px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            backdrop-filter: blur(4px);
         }
-        .user-info {
-            margin: 10px 0;
+
+        .reset-btn:active {
+            background-color: rgba(0,0,0,0.05);
         }
-        .user-info p {
-            font-size: 14px;
-            margin: 5px 0;
+
+        .footer-note {
+            margin-top: 24px;
+            font-size: 0.7rem;
+            color: var(--tg-theme-hint-color, #8e8e93);
+            opacity: 0.7;
         }
     </style>
-<link rel="me" href="https://www.blogger.com/profile/12615525391666988711" />
-<meta name='google-adsense-platform-account' content='ca-host-pub-1556223355139109'/>
-<meta name='google-adsense-platform-domain' content='blogspot.com'/>
-<link rel="me" href="https://www.blogger.com/profile/18369340732868072285" />
-<meta name='google-adsense-platform-account' content='ca-host-pub-1556223355139109'/>
-<meta name='google-adsense-platform-domain' content='blogspot.com'/>
 </head>
 <body>
-    <div class="container">
-        <h1>Auto Ads</h1>
-        <div class="developer" onclick="window.location.href='http://t.me/Finegame_bot'">Developer by </div>
-        
-        <!-- Display User Info -->
-        <div class="user-info">
-            <p>Welcome, <span id="user-name"></span></p>
-        </div>
 
-        <div class="stats">
-            <p>Watched Ads: <span id="watched-ads">0</span></p>
-            <p>Earned Points: <span id="earned-points">0</span></p>
-        </div>
-        <div class="progress-circle">
-            <span id="ads-progress">0%</span>
-        </div>
-        <div class="buttons">
-            <button id="watch-ad-btn" onclick="watchAd()">Watch Ad</button>
-            <button id="auto-ad-btn" onclick="startAutoAds()">Auto Show Ads</button>
-            <button id="stop-auto-btn" onclick="stopAutoAds()">Stop Auto Ads</button>
-           
-        </div>
-
-        <!-- Withdraw Section -->
-        <div class="withdraw-section" id="withdraw-section">
-            <h3 style="color: orange; margin-bottom: 15px;">Withdrawal Request</h3>
-            <input type="number" id="withdraw-amount" placeholder="Enter Points to Withdraw" />
-            <select id="payment-method">
-                <option value="bkash">Bkash</option>
-                <option value="nagad">Nagad</option>
-                <option value="manual">Manual</option>
-            </select>
-            <input type="text" id="withdraw-phone" placeholder="Enter Phone Number" />
-            <button onclick="withdrawPoints()">Withdraw</button>
-            <p id="withdraw-status"></p>
-        </div>
+<div class="card">
+    <div class="badge">🎬 AUTO LOOP MODE</div>
+    <h1>TMA Ad Hub</h1>
+    <div class="stats-panel">
+        <div class="counter-label">ADS PLAYED</div>
+        <div class="counter" id="adCounterDisplay">0</div>
+        <div class="counter-label" style="margin-top: 8px;">🔄 continuous loop</div>
     </div>
 
-    <script src="//adsxuit.com/cdn/ads.php" data-zone="10158574" data-sdk="show_10158574"></script>
+    <div class="status-text" id="statusMessage">
+        <span id="ledIndicator" class="led"></span>
+        <span id="statusLabel">Initializing ad engine...</span>
+    </div>
 
-    <script>
-        const MIN_WITHDRAW_POINTS = 5;
-        const ADMIN_USER_ID = 7694112804;
-        const BOT_TOKEN = "8548817245:AAESVoTzqrgW7K4Pxhhj7wPhc_dRY3_HykQ";
-        let watchedAdsCount = 0;
-        let earnedPoints = 0.00;
-        let autoAdInterval;
+    <button id="toggleLoopBtn">
+        <span>⏸️</span> Pause Loop
+    </button>
+    
+    <button id="resetCountBtn" class="reset-btn">
+        ↻ Reset counter
+    </button>
+    <div class="footer-note">
+        spot ID: 6110920 • ads play automatically in sequence
+    </div>
+</div>
 
-        // Simulate user name from Telegram User ID (replace with actual logic to get user info)
-        const telegramUserName = "@exampleUser"; // Replace this line with the actual logic to fetch username
-        document.getElementById("user-name").textContent = telegramUserName;
-
-        // Check if user data is saved in localStorage
-        if (localStorage.getItem('watchedAdsCount')) {
-            watchedAdsCount = parseInt(localStorage.getItem('watchedAdsCount'));
-            earnedPoints = parseFloat(localStorage.getItem('earnedPoints'));
-            document.getElementById('watched-ads').textContent = watchedAdsCount;
-            document.getElementById('earned-points').textContent = earnedPoints.toFixed(2);
+<script>
+    (function() {
+        // ========================  CONFIGURATION  ========================
+        const SPOT_ID = '6110920';
+        const DELAY_BETWEEN_ADS_MS = 2200;   // 2.2 sec between ads (smooth loop)
+        
+        // ========================  GLOBAL STATE  ========================
+        let showAdFunction = null;          // reference to the show() method from SDK
+        let loopActive = true;              // true = looping enabled, false = paused
+        let isLoopRunning = false;          // prevents multiple concurrent loops
+        let adCounter = 0;                  // total ads attempted (both success / fail but each "show" call)
+        let currentLoopPromise = null;      // (optional reference, for safety)
+        
+        // DOM elements
+        const toggleBtn = document.getElementById('toggleLoopBtn');
+        const resetCountBtn = document.getElementById('resetCountBtn');
+        const adCounterDisplay = document.getElementById('adCounterDisplay');
+        const statusLabelSpan = document.getElementById('statusLabel');
+        const ledIndicator = document.getElementById('ledIndicator');
+        
+        // Helper: update UI (counter + status message colors)
+        function updateUI() {
+            adCounterDisplay.innerText = adCounter;
         }
-
-        // Function to watch an ad and update stats
-        function watchAd() {
-            if (typeof show_10158574 ==='function') {
-                show_10158574().then(() => {
-                    // When the ad is shown, we add points
-                    watchedAdsCount++;
-                    document.getElementById('watched-ads').textContent = watchedAdsCount;
-                    earnedPoints += 0.50; // Add 0.50 points per ad watched
-                    document.getElementById('earned-points').textContent = earnedPoints.toFixed(2);
-                    localStorage.setItem('watchedAdsCount', watchedAdsCount);
-                    localStorage.setItem('earnedPoints', earnedPoints.toFixed(2));
-
-                    // Update progress circle
-                    updateProgressCircle();
-                });
+        
+        function setStatusMessage(text, isError = false, isPausedState = false) {
+            statusLabelSpan.innerText = text;
+            if (isError) {
+                ledIndicator.className = 'led error';
+            } else if (isPausedState) {
+                ledIndicator.className = 'led paused';
+            } else {
+                ledIndicator.className = 'led';
             }
         }
-
-        // Update progress circle based on watched ads
-        function updateProgressCircle() {
-            const percentage = (watchedAdsCount / 10) * 100;
-            document.getElementById('ads-progress').textContent = `${percentage}%`;
+        
+        // Helper sleep promise
+        function sleep(ms) {
+            return new Promise(resolve => setTimeout(resolve, ms));
         }
-
-        // Function to start auto showing ads
-        function startAutoAds() {
-            autoAdInterval = setInterval(watchAd, 5000); // Auto show ad every 5 seconds
-            document.getElementById('auto-ad-btn').disabled = true;
-            document.getElementById('stop-auto-btn').disabled = false;
-        }
-
-        // Function to stop auto ads
-        function stopAutoAds() {
-            clearInterval(autoAdInterval);
-            document.getElementById('auto-ad-btn').disabled = false;
-            document.getElementById('stop-auto-btn').disabled = true;
-        }
-
-        // Function to show withdraw form
-        function showWithdrawForm() {
-            document.getElementById('withdraw-section').style.display = 'block';
-        }
-
-        // Function to handle withdrawal
-        function withdrawPoints() {
-            const amount = document.getElementById('withdraw-amount').value;
-            const paymentMethod = document.getElementById('payment-method').value;
-            const phoneNumber = document.getElementById('withdraw-phone').value;
-
-            if (amount < MIN_WITHDRAW_POINTS) {
-                document.getElementById('withdraw-status').textContent = `Minimum withdrawal amount is ${MIN_WITHDRAW_POINTS} points.`;
+        
+        // Async infinite loop runner: plays ads repeatedly respecting loopActive flag
+        async function runAutoLoop() {
+            // Prevent multiple loop instances
+            if (isLoopRunning) {
+                console.log('[Loop] Already running, skip duplicate start');
                 return;
             }
-
-            if (amount > earnedPoints) {
-                document.getElementById('withdraw-status').textContent = `Insufficient balance. You have ${earnedPoints.toFixed(2)} points.`;
+            
+            // Safety: need showAdFunction to be ready
+            if (!showAdFunction) {
+                setStatusMessage('Ad engine not ready, waiting...', true);
+                console.warn('[Loop] showAdFunction missing, cannot start loop');
                 return;
             }
-
-            // Subtract points from earnedPoints after successful withdrawal
-            earnedPoints -= parseFloat(amount);
-            document.getElementById('earned-points').textContent = earnedPoints.toFixed(2);
-
-            // Save the updated balance in localStorage
-            localStorage.setItem('earnedPoints', earnedPoints.toFixed(2));
-
-            // Send withdrawal request to admin via Telegram
-            const message = `Withdrawal Request from ${telegramUserName}:\nAmount: ${amount} points\nPayment Method: ${paymentMethod}\nPhone Number: ${phoneNumber}`;
-            sendWithdrawRequestToAdmin(message);
-
-            // Show success message
-            document.getElementById('withdraw-status').textContent = 'Withdrawal request sent successfully!';
-
-            // Clear form
-            document.getElementById('withdraw-amount').value = '';
-            document.getElementById('withdraw-phone').value = '';
+            
+            isLoopRunning = true;
+            console.log('[Loop] Auto-loop started — infinite mode');
+            
+            // The main loop runs while loopActive flag is true AND showAdFunction exists
+            while (loopActive && showAdFunction) {
+                try {
+                    // Update status before playing
+                    setStatusMessage(`Playing ad #${adCounter + 1} ...`, false);
+                    console.log(`[Loop] Attempting ad #${adCounter + 1}`);
+                    
+                    // IMPORTANT: Call the TMA ad method that shows the interstitial/reward ad
+                    // This returns a Promise that resolves when ad is completed or dismissed.
+                    await showAdFunction();
+                    
+                    // Ad finished successfully (or at least completed the flow)
+                    adCounter++;
+                    updateUI();
+                    console.log(`[Loop] Ad #${adCounter} completed successfully`);
+                    setStatusMessage(`✅ Ad #${adCounter} done — next in ${DELAY_BETWEEN_ADS_MS/1000}s`, false);
+                    
+                } catch (adError) {
+                    // Ad error: user skip, network failure, no fill, or SDK internal error
+                    console.warn('[Loop] Ad error or skip:', adError);
+                    // Still count it as an "attempt" to maintain transparency (loop continues)
+                    adCounter++;
+                    updateUI();
+                    setStatusMessage(`⚠️ Ad attempt #${adCounter} interrupted — retrying soon`, true);
+                    
+                    // Short extra delay on error to avoid aggressive spamming
+                    await sleep(800);
+                }
+                
+                // If loop was deactivated during the ad or error handling, break out
+                if (!loopActive) break;
+                
+                // Wait before next ad (smooth looping, prevents CPU overload)
+                await sleep(DELAY_BETWEEN_ADS_MS);
+                
+                // Re-check active flag again after delay
+                if (!loopActive) break;
+                
+                // Edge: if showAdFunction became null for some reason, break loop
+                if (!showAdFunction) {
+                    setStatusMessage('Ad function lost — reinitializing required', true);
+                    break;
+                }
+            }
+            
+            // Loop exited because loopActive became false OR showAdFunction missing
+            isLoopRunning = false;
+            if (!loopActive) {
+                setStatusMessage('⏸️ Loop paused — press "Resume Loop"', false, true);
+                console.log('[Loop] Auto-loop stopped (user pause)');
+            } else if (!showAdFunction) {
+                setStatusMessage('❌ Ad engine unavailable — contact support', true);
+            } else {
+                setStatusMessage('Loop idle', false);
+            }
         }
-
-        // Function to send withdrawal request to admin
-        function sendWithdrawRequestToAdmin(message) {
-            fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage?chat_id=${ADMIN_USER_ID}&text=${encodeURIComponent(message)}`)
-                .then(response => response.json())
-                .then(data => {
-                    if (data.ok) {
-                        console.log('Message sent to admin');
+        
+        // Public method to start/resume loop (safe)
+        function startLoop() {
+            if (!showAdFunction) {
+                setStatusMessage('Waiting for ad engine...', true);
+                console.warn('[Start] Cannot start loop: ad engine not initialized');
+                return false;
+            }
+            
+            if (loopActive) {
+                console.log('[Start] Loop already active');
+                // If loop is already active but maybe isLoopRunning is false due to prior exit? we re-trigger.
+                if (!isLoopRunning) {
+                    runAutoLoop().catch(err => console.error('[Loop] Unhandled loop error', err));
+                }
+                return true;
+            }
+            
+            // Resume from paused state
+            loopActive = true;
+            setStatusMessage('Resuming loop...', false);
+            // ensure we don't double-run loops
+            if (!isLoopRunning) {
+                runAutoLoop().catch(err => console.error('[Loop] runtime error', err));
+            }
+            return true;
+        }
+        
+        // Pause the loop gracefully
+        function pauseLoop() {
+            if (!loopActive) return;
+            loopActive = false;
+            setStatusMessage('⏸️ Pausing after current ad...', false, true);
+            console.log('[Loop] Pause requested — loop will stop after current ad/delay');
+            // The running loop will detect loopActive === false and exit soon.
+        }
+        
+        // Reset ad counter (does not affect loop state)
+        function resetCounter() {
+            adCounter = 0;
+            updateUI();
+            setStatusMessage(loopActive ? 'Counter reset, loop continues' : 'Counter reset', false, !loopActive);
+            console.log('[UI] Ad counter reset to 0');
+        }
+        
+        // Update toggle button text based on loopActive flag
+        function updateToggleButton() {
+            if (loopActive) {
+                toggleBtn.innerHTML = '<span>⏸️</span> Pause Loop';
+            } else {
+                toggleBtn.innerHTML = '<span>▶️</span> Resume Loop';
+            }
+        }
+        
+        // Toggle between pause & resume
+        function onToggleLoop() {
+            if (loopActive) {
+                pauseLoop();
+            } else {
+                startLoop();
+            }
+            updateToggleButton();
+        }
+        
+        // ===============  AD ENGINE INITIALIZATION (with Spot ID) ===============
+        function initAdEngine() {
+            setStatusMessage('Initializing ad engine...', false);
+            // Use the global initCdTma function provided by tma.js
+            if (typeof window.initCdTma !== 'function') {
+                setStatusMessage('SDK not loaded — check network', true);
+                console.error('[Init] window.initCdTma not available');
+                return Promise.reject(new Error('initCdTma missing'));
+            }
+            
+            return window.initCdTma({ id: SPOT_ID })
+                .then(showFn => {
+                    if (typeof showFn !== 'function') {
+                        throw new Error('SDK did not return a valid show function');
                     }
+                    showAdFunction = showFn;
+                    // Also attach to window for debugging (optional)
+                    window.__adShowFn = showFn;
+                    console.log('[Init] Ad engine ready, spot ID', SPOT_ID);
+                    setStatusMessage('✅ Ad engine ready — auto loop starting', false);
+                    return true;
                 })
-                .catch(error => console.error('Error sending message:', error));
+                .catch(initError => {
+                    console.error('[Init] Ad init failed:', initError);
+                    setStatusMessage(`Init failed: ${initError.message || 'unknown'}`, true);
+                    // keep showAdFunction = null, loop won't start
+                    return false;
+                });
         }
-    </script>
+        
+        // ===============  BOOTSTRAP & AUTO LOOP TRIGGER ===============
+        async function bootstrap() {
+            // 1. Prepare Telegram WebApp environment
+            if (window.Telegram && window.Telegram.WebApp) {
+                window.Telegram.WebApp.ready();
+                window.Telegram.WebApp.expand();
+                // Optional: set main button if needed but not required
+                console.log('[TG] WebApp ready & expanded');
+            } else {
+                console.warn('[TG] Telegram WebApp object missing, but continuing');
+            }
+            
+            // 2. Initialize ad SDK
+            const initSuccess = await initAdEngine();
+            
+            // 3. If initialization succeeded, start auto-loop immediately (automatic by requirement)
+            if (initSuccess && showAdFunction) {
+                // loopActive is already true by default
+                // Make sure we start the infinite looping 
+                // Use microtask to avoid race conditions
+                setTimeout(() => {
+                    if (showAdFunction && loopActive && !isLoopRunning) {
+                        runAutoLoop().catch(err => {
+                            console.error('[Fatal] Auto-loop crashed', err);
+                            setStatusMessage('Loop error, try reload', true);
+                        });
+                    } else if (showAdFunction && !isLoopRunning) {
+                        // edge: ensure loop starts if flag inactive? but loopActive true
+                        if (loopActive) runAutoLoop();
+                    }
+                }, 100);
+            } else {
+                // failed to init, but we'll show error and manual retry? Provide reset? But user can re-run via toggle? impossible because no show function.
+                setStatusMessage('Ad engine error — check spot ID / network', true);
+                // Disable toggle button if ad engine dead
+                toggleBtn.disabled = true;
+                toggleBtn.style.opacity = '0.5';
+            }
+            
+            // Update button text initially
+            updateToggleButton();
+        }
+        
+        // ===============  EVENT LISTENERS ===============
+        toggleBtn.addEventListener('click', () => {
+            if (!showAdFunction) {
+                window.Telegram?.WebApp?.showAlert?.('Ad engine not ready, please reload');
+                setStatusMessage('Engine missing, cannot toggle', true);
+                return;
+            }
+            onToggleLoop();
+            updateToggleButton();
+        });
+        
+        resetCountBtn.addEventListener('click', () => {
+            resetCounter();
+            // Optional haptic feedback if available
+            if (window.Telegram?.WebApp?.HapticFeedback) {
+                window.Telegram.WebApp.HapticFeedback.impactOccurred('light');
+            }
+        });
+        
+        // Optional: when user closes or minimizes, we do not need to stop loop? But it's fine.
+        // Also handle visibility change? Not needed for requirement.
+        
+        // Start everything
+        bootstrap().catch(err => {
+            console.error('[Bootstrap] Critical error', err);
+            setStatusMessage('Startup error', true);
+        });
+        
+        // Additional safety: if the ad function disappears for some reason, but we keep state consistent.
+        // Also expose reset capability via console if needed (just for debugging)
+        window.__adLoopAPI = {
+            pause: () => { if (showAdFunction) pauseLoop(); updateToggleButton(); },
+            resume: () => { if (showAdFunction) startLoop(); updateToggleButton(); },
+            resetCounter,
+            status: () => ({ loopActive, isLoopRunning, adCounter, engineReady: !!showAdFunction })
+        };
+    })();
+</script>
 </body>
 </html>
 
+    
 
 
 
